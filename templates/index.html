@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+    
+
+    <form method="post">
+        <label for="column">Choose a column:</label>
+        <select name="column" id="column">
+            <!-- Options will be dynamically populated from Flask -->
+            {% for column in columns %}
+            <option value="{{ column }}">{{ column }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" name="order" value="asc">Ascending</button>
+        <button type="submit" name="order" value="desc">Descending</button>
+    </form>
+    <br>
+    <table border="1">
+        <tr>
+            {% for column in columns %}
+            <th>
+                {{ column }}
+                <a href="?sort_by={{ column }}&order=asc">↑</a>
+                <a href="?sort_by={{ column }}&order=desc">↓</a>
+            </th>
+            {% endfor %}
+        </tr>
+        {% for row in data %}
+        <tr>
+            {% for cell in row %}
+            <td>{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}
