@@ -2,7 +2,32 @@
 
 {% block body %}
 
-    <h1>{{ yaxis }} vs {{ xaxis }}</h1>
+    <!-- <h1>{{ yaxis }} vs {{ xaxis }}</h1> -->
+    <form method="post">
+        <label for="column">Country:</label>
+        <select name="column" id="column">
+            <!-- Options will be dynamically populated from Flask -->
+            {% for column in country_columns %}
+            <option value="{{ column }}">{{ column }} </option>
+            {% endfor %}
+            <select name="All Countries" id=""></select>
+        </select>
+        <label for="column">Year:</label>
+        <select name="column" id="column">
+            <!-- Options will be dynamically populated from Flask -->
+            {% for column in year_columns %}
+            <option value="{{ column }}">{{ column }}</option>
+            {% endfor %}
+        </select>
+        <label for="column">Cancer:</label>
+        <select name="column" id="column">
+            <!-- Options will be dynamically populated from Flask -->
+            {% for column in cancer_columns %}
+            <option value="{{ column }}">{{ column }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Submit</button>
+    </form>
     Plot goes here.
 
 {% endblock %}

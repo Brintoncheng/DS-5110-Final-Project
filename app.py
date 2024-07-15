@@ -15,11 +15,12 @@ df.loc[df['Country'] == 'North America', 'Code'] = 'NA'
 
 # Define lists of feature labels
 cols = df.columns.to_numpy()
-cols = np.array([col.strip() for col in cols])
-cancer_types = cols[3:]
-countries = df["Country"].unique()
+#cols = np.array([col.strip() for col in cols])
+countries = df["Country"].unique().tolist()
 codes = df["Code"].unique()
 years = df["Year"].unique()
+cancer_types = cols[3:]
+
 default_column = "Country"
 xaxis = 'Year'
 yaxis = 'Liver cancer'
@@ -36,7 +37,9 @@ def index():
 @app.route('/plot')
 def plot():
     ...
-    return render_template('plot.html', xaxis = xaxis, yaxis = yaxis, plot=plot)
+    plot_pic = None
+    country_columns = countries.append('All Countries')
+    return render_template('plot.html', country_columns = country_columns, year_columns = years, cancer_columns = cancer_types, xaxis = xaxis, yaxis = yaxis, plot_pic=plot_pic)
 
 
 if __name__ == '__main__':
