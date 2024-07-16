@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, redirect, url_for
 import pandas as pd
 import numpy as np
+from import_clean import filter_data
 import os.path as pt
 
 app = Flask(__name__)
@@ -15,6 +16,9 @@ df=pd.read_csv(s_dataPath)
 df['Code'] = df.groupby('Country')['Code'].transform(lambda x: x.mode()[0] if not x.mode().empty else None)
 df['Code'] = df['Code'].apply(lambda x: x.strip() if pd.notna(x) else x)
 df.loc[df['Country'] == 'North America', 'Code'] = 'NA'
+
+# Remove Code Column
+df = df.drop(['Code'], axis=1)
 
 # Remove non_countries
 non_countries = [
@@ -61,32 +65,50 @@ non_countries = [
 df = df[~df['Country'].isin(non_countries)]
 
 # Define lists of feature labels
-cols = df.columns.to_numpy()
+cols = df.columns.tolist()
 #cols = np.array([col.strip() for col in cols])
 countries = df["Country"].unique().tolist()
-codes = df["Code"].unique()
-years = df["Year"].unique()
-cancer_types = cols[3:]
+years = df["Year"].unique().tolist()
+cancer_types = cols[2:]
+
+# Set default values
+country = "ALL"
+year = "ALL"
+cancer = "ALL"
+new_cols = cols.copy()
 
 default_column = "Country"
 xaxis = 'Year'
 yaxis = 'Liver cancer'
 
-@app.route('/')
+data = df.copy()
+
+@app.route('/', methods=["GET", "POST"])
 def index():
-    data = df.copy()
-    sort_by = request.args.get('sort_by', default_column)
-    order = request.args.get('order', 'asc')
-    data = data.sort_values(by=sort_by, ascending=(order == 'asc'))
-    return render_template('index.html', data=data.values.tolist(), columns=cols)
+    global data
+    if request.method == "POST":
+        country = request.form.get('country', 'ALL')
+        year = request.form.get('year', 'ALL')
+        if year != 'ALL':
+            year = int(year)
+        cancer = request.form.get('cancer', 'ALL')
+        data = filter_data(df, country=country, year=year, cancer=cancer)
+        sort_by = default_column
+        order = 'asc'
+    else:
+        sort_by = request.args.get('sort_by', default_column)
+        order = request.args.get('order', 'asc')
+    
+    data = data.sort_values(by=sort_by, ascending=(order=='asc'))
+    return render_template('index.html', data = data.values.tolist(), columns = data.columns.tolist(),
+                           countries = countries, years = years, cancers = cancer_types)
 
 
-@app.route('/plot')
+@app.route('/plot', methods=["GET", "POST"])
 def plot():
     ...
     plot_pic = None
-    country_columns = countries.append('All Countries')
-    return render_template('plot.html', country_columns = country_columns, year_columns = years, cancer_columns = cancer_types, xaxis = xaxis, yaxis = yaxis, plot_pic=plot_pic)
+    return render_template('plot.html', country_columns = countries, year_columns = years, cancer_columns = cancer_types, xaxis = xaxis, yaxis = yaxis, plot_pic=plot_pic)
 
 
 if __name__ == '__main__':

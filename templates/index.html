@@ -3,9 +3,36 @@
 {% block body %}
 
     
-
+    <br>
+    Filter By
+    <form method="post">
+        <label for="country">Country:</label>
+        <select name="country" id="country">
+            <option value="ALL" selected>All Countries</option>
+            {% for country in countries %}
+            <option value="{{ country }}">{{ country }} </option>
+            {% endfor %}
+            <select name="All Countries" id=""></select>
+        </select>
+        <label for="year">Year:</label>
+        <select name="year" id="year">
+            <option value="ALL" selected>All Years</option>
+            {% for year in years %}
+            <option value="{{ year }}">{{ year }}</option>
+            {% endfor %}
+        </select>
+        <label for="cancer">Cancer:</label>
+        <select name="cancer" id="cancer">
+            <option value="ALL" selected>All Cancers</option>
+            {% for cancer in cancers %}
+            <option value="{{ cancer }}">{{ cancer }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Submit</button>
+    </form>
     
     <br>
+    
     <table border="1">
         <tr>
             {% for column in columns %}
