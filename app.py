@@ -1,12 +1,15 @@
 from flask import Flask, request, render_template, redirect, url_for
 import pandas as pd
 import numpy as np
+import os.path as pt
 
 app = Flask(__name__)
 
 
 # Import data
-df = pd.read_csv(r'data/Cancer Deaths by Country and Type Dataset.csv')
+s_dataPath = pt.join('data', 'Cancer Deaths by Country and Type Dataset.csv')
+# df = pd.read_csv(r'data/Cancer Deaths by Country and Type Dataset.csv')
+df=pd.read_csv(s_dataPath)
 
 # Remove NaNs
 df['Code'] = df.groupby('Country')['Code'].transform(lambda x: x.mode()[0] if not x.mode().empty else None)
@@ -74,8 +77,8 @@ def index():
     data = df.copy()
     sort_by = request.args.get('sort_by', default_column)
     order = request.args.get('order', 'asc')
-    data = data.sort_values(by=sort_by, ascending= order=='asc')
-    return render_template('index.html', data = data.values.tolist(), columns = cols)
+    data = data.sort_values(by=sort_by, ascending=(order == 'asc'))
+    return render_template('index.html', data=data.values.tolist(), columns=cols)
 
 
 @app.route('/plot')
