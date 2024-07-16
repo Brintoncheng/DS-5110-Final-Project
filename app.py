@@ -13,6 +13,50 @@ df['Code'] = df.groupby('Country')['Code'].transform(lambda x: x.mode()[0] if no
 df['Code'] = df['Code'].apply(lambda x: x.strip() if pd.notna(x) else x)
 df.loc[df['Country'] == 'North America', 'Code'] = 'NA'
 
+# Remove non_countries
+non_countries = [
+    "American Samoa",
+    "Andean Latin America",
+    "Australasia",
+    "Bermuda",
+    "Caribbean",
+    "Central Asia",
+    "Central Europe",
+    "Central Latin America",
+    "Central Sub-Saharan Africa",
+    "East Asia",
+    "Eastern Europe",
+    "Eastern Sub-Saharan Africa",
+    "England",
+    "Greenland",
+    "Guam",
+    "Latin America and Caribbean",
+    "Micronesia (country)",
+    "North Africa and Middle East",
+    "North America",
+    "Northern Ireland",
+    "Northern Mariana Islands",
+    "Oceania",
+    "Palestine",
+    "Puerto Rico",
+    "Scotland",
+    "South Asia",
+    "Southeast Asia",
+    "Southern Latin America",
+    "Southern Sub-Saharan Africa",
+    "Sub-Saharan Africa",
+    "Taiwan",
+    "Timor",
+    "Tropical Latin America",
+    "United States Virgin Islands",
+    "Wales",
+    "Western Europe",
+    "Western Sub-Saharan Africa",
+    "World"
+]
+
+df = df[~df['Country'].isin(non_countries)]
+
 # Define lists of feature labels
 cols = df.columns.to_numpy()
 #cols = np.array([col.strip() for col in cols])
