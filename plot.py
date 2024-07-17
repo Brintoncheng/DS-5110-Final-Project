@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
 import seaborn as sb
+import os.path as pt
 
 '''
 Plot scenarios:
@@ -19,34 +20,21 @@ Plot scenarios:
 
 def plot(data, country:str=None, year:int=None, cancer:str=None, plot_type=''):
     # the defaults should be "all", like all-country, all-years, all-cancer-types, etc.
-    df_data = data.copy()
     s_plot = 'hist' #@ might remove this.
-    s_country = country
-    i_year = year
-    s_cancer = cancer
-    l_inputTypes = [1, 1, 1] # [cancer, country, year]
-    if(cancer == None or cancer == ''):
-        s_cancer = 'all'
-        l_inputTypes[0] = 2
-    if(country == None or country == ''):
-        s_country = 'all'
-        l_inputTypes[1] = 2
-    if(year == None or year == ''):
-        i_year = 'all'
-        s_plot = 'scat'
-        l_inputTypes[2] = 2
 
-    if(l_inputTypes[0] == 1 and l_inputTypes[1] == 1):
-        return single_cancer_conutry(df_data, s_cancer, s_country)
-    elif(l_inputTypes[1] == 1 and l_inputTypes[2] == 1):
-        return single_country_year(df_data, s_country, i_year)
-    elif(l_inputTypes[0] == 1 and l_inputTypes[2] == 1):
-        return single_cancer_year(df_data, s_cancer, i_year)
-    else: # only 1 single-factor, need 3D plot
-        pass
+    if (country is not None) and (cancer is not None):
+        return country_cancer(data, cancer, country)
+
+    if (country is not None) and (year is not None):
+        return country_year(data, country, year)
+
+    if (year is not None) and (cancer is not None):
+        return year_cancer(data, cancer, year)
+
+    pass
 
 
-def single_cancer_conutry(data:pd.DataFrame, cancer:str=None, country:str=None):
+def country_cancer(data:pd.DataFrame, cancer:str=None, country:str=None):
     '''
     @Purpose: Create a Scatter plot showing number of Death of a given Cancer in a given Country with respect to time.\n
     @Param:
@@ -65,7 +53,7 @@ def single_cancer_conutry(data:pd.DataFrame, cancer:str=None, country:str=None):
     return g
 
 
-def single_country_year(data:pd.DataFrame, country:str=None, year:int=None):
+def country_year(data:pd.DataFrame, country:str=None, year:int=None):
     '''
     @Purpose: Create a Bar plot showing number of Death with respect to each Cancer in a given Country at a given Year.\n
     @Param:
@@ -76,19 +64,21 @@ def single_country_year(data:pd.DataFrame, country:str=None, year:int=None):
         A pyplot object.
     '''
     s_title = f'Death of each Cancer on {year} in {country}'
-    df_fitler = data[data['Country'] == country]
-    df_fitler = df_fitler[df_fitler['Year'] == year]
-    df_fitler = df_fitler.drop(columns=['Country', 'Code', 'Year'])
-    df_fitler = df_fitler.melt()
+    df_filter = data[(data['Country'] == country) & (data['Year'] == year)]
+    df_filter = df_filter.drop(columns=['Country', 'Year'])
+    df_filter = df_filter.melt()
+    
+    x_data = np.array(df_filter['variable'].astype(str))
+    y_data = np.array(df_filter['value'])
 
-    g = sb.barplot(x=np.array(df_fitler.variable), y=np.array(df_fitler.value))
+    g = sb.barplot(x=x_data, y=y_data)
     g.tick_params(axis='x', rotation=90)
-    g.set(xlabel='Cancer Types', ylabel='Death Number')
+    g.set(xlabel='Cancer Types', ylabel='Deaths')
     g.set_title(s_title)
     return g
 
 
-def single_cancer_year(data:pd.DataFrame, cancer:str=None, year:int=None):
+def year_cancer(data:pd.DataFrame, cancer:str=None, year:int=None):
     '''
     @Purpose: Create a Bar plot showing number of Death of a given Cancer at a given Year with respect to Countries.\n
     @Param:
@@ -99,20 +89,10 @@ def single_cancer_year(data:pd.DataFrame, cancer:str=None, year:int=None):
         A pyplot object.
     '''
     s_title = f'Death of {cancer}on {year} in every country'
-    df_filter = data[data['Year'] == year]
-    df_filter = df_filter[['Country', cancer]]
-    l_regions = ['American Samoa', 'Andean Latin America', 'Australasia', 'Bermuda', 'Caribbean', 'Central Asia', 'Central Europe', 
-             'Central Latin America', 'Central Sub-Saharan Africa', 'East Asia', 'Eastern Europe', 'Eastern Sub-Saharan Africa', 
-             'England', 'Greenland', 'Guam', 'Latin America and Caribbean', 'North Africa and Middle East', 'North America', 
-             'Northern Ireland', 'Northern Mariana Islands', 'Oceania', 'Palestine', 'Puerto Rico', 'Scotland', 'South Asia', 
-             'Southeast Asia', 'Southern Latin America', 'Southern Sub-Saharan Africa', 'Sub-Saharan Africa', 'Timor', 
-             'Tropical Latin America', 'United States Virgin Islands', 'Wales', 'Western Europe', 'Western Sub-Saharan Africa', 
-             'World']
-    for s_item in l_regions:
-        df_filter = df_filter.drop(index=df_filter[df_filter['Country'] == s_item].index)
+    df_filter = data.loc[data['Year'] == year, ['Country', cancer]]
 
     plt.figure(figsize=[80, 20])
-    g = sb.barplot(x=np.array(df_filter['Country']), y=np.array(df_filter[cancer]))
+    g = sb.barplot(data=df_filter, x='Country', y=cancer)
     g.tick_params(axis='x', rotation=90)
     g.set(yscale='log', xlabel='Country', ylabel=cancer+'death (log)')
     g.set_title(s_title)
@@ -124,31 +104,27 @@ def ThreeD_plot(data:pd.DataFrame, d_singleGiven:dict):
 
 
 
-
-import os.path as pt
 if __name__ == '__main__':
     s_dataPath = pt.join('data', 'Cancer Deaths by Country and Type Dataset.csv')
-    df_data = pd.read_csv(s_dataPath)
+    data = pd.read_csv(s_dataPath)
 
     #@ Test Case 1
     country = 'Afghanistan'
     year = None
     cancer = 'Liver cancer '
-    plot(df_data, country, year, cancer) # x_axis = 'Year'
-
+    plot(data, country, year, cancer) # x_axis = 'Year'
+    plt.show()
 
     #@ Test Case 2
     country = 'Afghanistan'
     year = 1990
-    cancer = ''
-    plot(df_data, country, year, cancer) # x_axis = 'Cancer'
-
+    cancer = None
+    #plot(data, country, year, cancer) # x_axis = 'Cancer'
+    #plt.show()
 
     #@ Test Case 3
-    country = ''
+    country = None
     year = 1990
     cancer = 'Liver cancer '
-    # plot(df_data, country, year, cancer) # x_axis = 'Country'
-
-
-    plt.show()
+    # plot(data, country, year, cancer) # x_axis = 'Country'
+    #plt.show()
