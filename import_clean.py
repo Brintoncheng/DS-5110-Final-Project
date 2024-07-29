@@ -20,7 +20,7 @@ years = df["Year"].unique()
 
 print(years)
 
-def filter(data, country=None, year=None, cancer=None):
+def filter_data(data, country=None, year=None, cancer=None):
     df = data
     if country is not None:
         df = df[df["Country"] == country]
