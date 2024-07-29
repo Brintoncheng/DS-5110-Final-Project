@@ -1,9 +1,12 @@
-from flask import Flask, request, render_template, redirect, url_for
+import matplotlib
+matplotlib.use('Agg')
+from flask import Flask, request, render_template, redirect, url_for, send_from_directory
 import pandas as pd
 import numpy as np
 from initialization import import_data, clean_data, initialize_variables, filter_data
 from constants import FILENAME
 from visualizations import *
+import os
 
 app = Flask(__name__)
 
@@ -47,10 +50,27 @@ def index():
 
 @app.route('/plot', methods=["GET", "POST"])
 def plot():
-    ...
-    plot_pic = None
-    return render_template('plot.html', country_columns = countries, year_columns = years, cancer_columns = cancer_types, xaxis = xaxis, yaxis = yaxis, plot_pic=plot_pic)
+    if request.method == "POST":
+        country = request.form.get('country')
+        year = request.form.get('year')
+        cancer = request.form.get('cancer')
+        country = None if country == '' else country
+        year = None if year == '' else int(year) if year.isdigit() else None
+        cancer = None if cancer == '' else cancer
+        print(country, year, cancer)
+        
+        plot_object = choose_plot(data=data, country=country, year=year, cancer=cancer)
+        plot_png = save_plot_to_png(plot_object, 'plot_png')
+        return render_template('plot.html', country_columns=countries, year_columns=years, cancer_columns=cancer_types, plot_png=plot_png)
+        
+    else:
+        return render_template('plot.html', country_columns = countries, year_columns = years, cancer_columns = cancer_types)
 
+@app.route('/static/plots/<filename>')
+def plot_png(filename):
+    return send_from_directory('static/plots', filename)
 
 if __name__ == '__main__':
+    if not os.path.exists('static/plots'):
+        os.makedirs('static/plots')
     app.run(debug=True)

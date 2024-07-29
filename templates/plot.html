@@ -2,32 +2,34 @@
 
 {% block body %}
 
-    <!-- <h1>{{ yaxis }} vs {{ xaxis }}</h1> -->
     <form method="post">
-        <label for="column">Country:</label>
-        <select name="column" id="column">
-            <!-- Options will be dynamically populated from Flask -->
+        <label for="country">Country:</label>
+        <select name="country" id="country">
+            <option value="" selected>All Countries</option>
             {% for column in country_columns %}
             <option value="{{ column }}">{{ column }} </option>
             {% endfor %}
             <select name="All Countries" id=""></select>
         </select>
-        <label for="column">Year:</label>
-        <select name="column" id="column">
-            <!-- Options will be dynamically populated from Flask -->
+        <label for="year">Year:</label>
+        <select name="year" id="year">
+            <option value="" selected>All Years</option>
             {% for column in year_columns %}
             <option value="{{ column }}">{{ column }}</option>
             {% endfor %}
         </select>
-        <label for="column">Cancer:</label>
-        <select name="column" id="column">
-            <!-- Options will be dynamically populated from Flask -->
+        <label for="cancer">Cancer:</label>
+        <select name="cancer" id="cancer">
+            <option value="" selected>All Cancers</option>
             {% for column in cancer_columns %}
             <option value="{{ column }}">{{ column }}</option>
             {% endfor %}
         </select>
         <button type="submit">Submit</button>
     </form>
-    Plot goes here.
+    {% if plot_png %}
+    <!-- <h1>{{ yaxis }} vs {{ xaxis }}</h1> -->
+    <img src="{{ url_for('plot_png', filename=plot_png) }}" alt="Plot">
+    {% endif %}
 
 {% endblock %}

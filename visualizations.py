@@ -1,8 +1,13 @@
+import matplotlib
+matplotlib.use('Agg')
+from flask import send_file
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 import numpy as np
-import seaborn as sb
+import seaborn as sns
 import os.path as pt
+import os
 
 '''
 Plot scenarios:
@@ -24,7 +29,6 @@ Plot scenarios:
 def choose_plot(data, country:str=None, year:int=None, cancer:str=None, plot_type=''):
     # the defaults should be "all", like all-country, all-years, all-cancer-types, etc.
     s_plot = 'hist' #@ might remove this.
-
     if (country is not None) and (cancer is not None):
         return country_cancer(data, cancer, country)
 
@@ -42,6 +46,7 @@ def choose_plot(data, country:str=None, year:int=None, cancer:str=None, plot_typ
     if(year):
         return ThreeD_plot(data, 'Year', year)
 
+    return None
 
 def country_cancer(data:pd.DataFrame, cancer:str=None, country:str=None):
     '''
@@ -56,10 +61,11 @@ def country_cancer(data:pd.DataFrame, cancer:str=None, country:str=None):
     s_title = f'Death of {cancer}over years in {country}'
     df_filter = data[data['Country'] == country]
 
-    g = sb.scatterplot(data=df_filter, x='Year', y=cancer)
-    g.set(ylabel=cancer + 'Death')
-    g.set_title(s_title)
-    return g
+    fig, ax = plt.subplots(figsize=(12,6))
+    sns.scatterplot(data=df_filter, x='Year', y=cancer, ax=ax)
+    ax.set(ylabel=cancer + 'Death')
+    ax.set_title(s_title)
+    return fig
 
 
 def country_year(data:pd.DataFrame, country:str=None, year:int=None):
@@ -72,41 +78,52 @@ def country_year(data:pd.DataFrame, country:str=None, year:int=None):
     @Return:
         A pyplot object.
     '''
-    s_title = f'Death of each Cancer on {year} in {country}'
+    s_title = f'Cancer Deaths in {year} in {country}'
     df_filter = data[(data['Country'] == country) & (data['Year'] == year)]
     df_filter = df_filter.drop(columns=['Country', 'Year'])
     df_filter = df_filter.melt()
 
     x_data = np.array(df_filter['variable'].astype(str))
     y_data = np.array(df_filter['value'])
+    
+    fig, ax = plt.subplots(figsize=(12,6))
+    sns.barplot(x=x_data, y=y_data, ax=ax)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    plt.tight_layout()
+    plt.subplots_adjust(top = 0.9, bottom=0.4)
+    ax.set(xlabel='Cancer Types', ylabel='Deaths')
+    ax.set_title(s_title)
+    return fig
 
-    g = sb.barplot(x=x_data, y=y_data)
-    g.tick_params(axis='x', rotation=90)
-    g.set(xlabel='Cancer Types', ylabel='Deaths')
-    g.set_title(s_title)
-    return g
 
-
-def year_cancer(data:pd.DataFrame, cancer:str=None, year:int=None):
+def year_cancer(data: pd.DataFrame, cancer: str = None, year: int = None, sort=False, top=False, bottom=False):
     '''
-    @Purpose: Create a Bar plot showing number of Death of a given Cancer at a given Year with respect to Countries.\n
+    @Purpose: Create a Bar plot showing number of Death of a given Cancer at a given Year with respect to Countries.
     @Param:
         data: pandas DataFrame, raw data.
         cancer: str, cancer name/type.
         year: int, year in AD.
     @Return:
-        A pyplot object.
+        A pyplot Figure object.
     '''
-    s_title = f'Death of {cancer}on {year} in every country'
+    s_title = f'Death of {cancer} in {year} in every country'
     df_filter = data.loc[data['Year'] == year, ['Country', cancer]]
+    
+    # Filter for top and bottom
+    
+    # If sort:
 
-    plt.figure(figsize=[data['Country'].unique().size, 20])
-    g = sb.barplot(data=df_filter, x='Country', y=cancer)
-    g.tick_params(axis='x', rotation=90)
-    g.set(yscale='log', xlabel='Country', ylabel=cancer+'death (log)')
-    g.set_title(s_title)
-    return g
+    if df_filter.empty:
+        raise ValueError("No data available for the specified year and cancer type.")
 
+    fig, ax = plt.subplots(figsize=(30, 6))  # Adjust figure size based on number of countries
+    sns.barplot(data=df_filter, x='Country', y=cancer, ax=ax)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+    ax.set(yscale='log', xlabel='Country', ylabel=f'{cancer} deaths (log scale)')
+    ax.set_title(s_title)
+
+    plt.tight_layout()
+    return fig
 
 def ThreeD_plot(data:pd.DataFrame, key:str, value:str|int):
     '''
@@ -171,7 +188,7 @@ def ThreeD_plot(data:pd.DataFrame, key:str, value:str|int):
     z = np.zeros(len(x))
 
     ## Plot 3D.
-    fig = plt.figure(figsize=[i_num1, i_num2]) #! might need change
+    fig = plt.figure(figsize=(12, 8)) #! might need change
     ax = fig.add_subplot(projection='3d')
     ax.xaxis.set_ticks([i for i in range(i_num1)])
     ax.xaxis.set_ticklabels(l_xlabels)
@@ -243,6 +260,18 @@ def dataClean():
     ]
     df = df[~df['Country'].isin(non_countries)]
     return df
+
+def save_plot_to_png(plot_object, filename):
+    if plot_object is None:
+        fig, ax = plt.subplots()
+        ax.text(0.5, 0.5, 'No plot available', horizontalalignment='center', verticalalignment='center')
+        plot_object = fig
+
+    plot_filepath = os.path.join('static', 'plots', filename)
+    plot_object.savefig(plot_filepath)
+    plot_png = f"{filename}.png"
+    return plot_png
+
 
 if __name__ == '__main__':
     data = dataClean()
