@@ -21,7 +21,7 @@ Plot scenarios:
 #!         That would require limiting user's selection in FE UI, and perhaps an additional function to pre-process data.
 
 
-def plot(data, country:str=None, year:int=None, cancer:str=None, plot_type=''):
+def choose_plot(data, country:str=None, year:int=None, cancer:str=None, plot_type=''):
     # the defaults should be "all", like all-country, all-years, all-cancer-types, etc.
     s_plot = 'hist' #@ might remove this.
 
@@ -282,7 +282,7 @@ if __name__ == '__main__':
     country = None
     year = 1990
     cancer = None
-    ret = plot(data, country, year, cancer)
+    ret = choose_plot(data, country, year, cancer)
 
 
 

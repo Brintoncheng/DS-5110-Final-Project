@@ -46,7 +46,11 @@
         {% for row in data %}
         <tr>
             {% for cell in row %}
-            <td>{{ cell }}</td>
+                {% if cell is number and cell == cell | int %}
+                    <td>{{ cell | int}}</td>
+                {% else %}
+                    <td>{{ cell }}</td>
+                {% endif %}
             {% endfor %}
         </tr>
         {% endfor %}
