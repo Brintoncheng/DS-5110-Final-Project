@@ -18,7 +18,7 @@ df = import_data(FILENAME)
 df = clean_data(df)
 
 # Initialize Variables
-cols, countries, years, cancer_types, country, year, cancer, new_cols, default_column, xaxis, yaxis = initialize_variables(df)
+cols, countries, years, cancer_types, country, year, cancer, new_cols, default_column = initialize_variables(df)
 data = df.copy()
 
 
@@ -69,6 +69,10 @@ def plot():
 @app.route('/static/plots/<filename>')
 def plot_png(filename):
     return send_from_directory('static/plots', filename)
+
+@app.route('/thanks')
+def thanks():
+    return render_template('thanks.html')
 
 if __name__ == '__main__':
     if not os.path.exists('static/plots'):
