@@ -1,24 +1,22 @@
 import pandas as pd
-import numpy as np
 import os
 from constants import NON_COUNTRIES
 
 def import_data(filename):
     data_path = os.path.join('data', filename)
-    df=pd.read_csv(data_path)
+    df = pd.read_csv(data_path)
     return df
 
 def clean_data(df):
     # Remove Code Column
     df = df.drop(['Code'], axis=1)
-    
+
     # Remove non_countries
     df = df[~df['Country'].isin(NON_COUNTRIES)]
-    
+
     # Turn all Cancer Death numbers into ints
     df.iloc[:, 2:] = df.iloc[:, 2:].astype(int)
 
-    
     return df
 
 def initialize_variables(df):

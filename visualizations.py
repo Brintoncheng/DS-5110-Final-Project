@@ -9,6 +9,9 @@ import seaborn as sns
 import os.path as pt
 import os
 
+from initialization import import_data, clean_data
+from constants import FILENAME, D_REGIONS
+
 '''
 Plot scenarios:
     1. single-country, single-cancer, cancer-number (Y) vs year (X).            Scatter
@@ -22,7 +25,8 @@ Plot scenarios:
 #! ToDo:
 #!      1. Scaling on 2D-y and 3D-z, apply log only necessary.
 #!      2. Simplify/combine the 3 2D-plot-function into one.
-#!      3. Perhaps limit the len/size of Cancer/Country/Year, for better visualization.
+#!      3. Write a function using linear regression plot.
+#!      4. Perhaps limit the len/size of Cancer/Country/Year, for better visualization.
 #!         That would require limiting user's selection in FE UI, and perhaps an additional function to pre-process data.
 
 
@@ -85,10 +89,11 @@ def country_year(data:pd.DataFrame, country:str=None, year:int=None):
 
     x_data = np.array(df_filter['variable'].astype(str))
     y_data = np.array(df_filter['value'])
-    
+
     fig, ax = plt.subplots(figsize=(12,6))
     sns.barplot(x=x_data, y=y_data, ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    # ax.tick_params(axis='x', rotation=90)
     plt.tight_layout()
     plt.subplots_adjust(top = 0.9, bottom=0.4)
     ax.set(xlabel='Cancer Types', ylabel='Deaths')
@@ -96,7 +101,7 @@ def country_year(data:pd.DataFrame, country:str=None, year:int=None):
     return fig
 
 
-def year_cancer(data: pd.DataFrame, cancer: str = None, year: int = None, sort=False, top=False, bottom=False):
+def year_cancer(data:pd.DataFrame, cancer:str=None, year:int=None, sort=False, top=False, bottom=False):
     '''
     @Purpose: Create a Bar plot showing number of Death of a given Cancer at a given Year with respect to Countries.
     @Param:
@@ -117,9 +122,11 @@ def year_cancer(data: pd.DataFrame, cancer: str = None, year: int = None, sort=F
         raise ValueError("No data available for the specified year and cancer type.")
 
     fig, ax = plt.subplots(figsize=(30, 6))  # Adjust figure size based on number of countries
+        # figsize=[data['Country'].unique().size, 20]
     sns.barplot(data=df_filter, x='Country', y=cancer, ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-    ax.set(yscale='log', xlabel='Country', ylabel=f'{cancer} deaths (log scale)')
+    # ax.tick_params(axis='x', rotation=90)
+    ax.set(yscale='log', xlabel='Country', ylabel=f'{cancer} deaths (log scale)') # yscale='linear' or 'log'
     ax.set_title(s_title)
 
     plt.tight_layout()
@@ -190,9 +197,9 @@ def ThreeD_plot(data:pd.DataFrame, key:str, value:str|int):
     ## Plot 3D.
     fig = plt.figure(figsize=(12, 8)) #! might need change
     ax = fig.add_subplot(projection='3d')
-    ax.xaxis.set_ticks([i for i in range(i_num1)])
+    ax.xaxis.set_ticks([i+0.25 for i in range(i_num1)])
     ax.xaxis.set_ticklabels(l_xlabels)
-    ax.yaxis.set_ticks([i for i in range(i_num2)])
+    ax.yaxis.set_ticks([i+0.25 for i in range(i_num2)])
     ax.yaxis.set_ticklabels(data[s_ylabel].unique())
     ax.set_xlabel(f'x-{s_xlabel}')
     ax.set_ylabel(f'y-{s_ylabel}')
@@ -203,62 +210,45 @@ def ThreeD_plot(data:pd.DataFrame, key:str, value:str|int):
     return fig
 
 
+def regionAnalysis(data:pd.DataFrame, cancer:str=None, s_region:str='asia', year:int=None):
+    #! data needs to be un-filtered data.
+    if(s_region in list(D_REGIONS.keys())): # input s_region is "Region" not "Country"
+        l_region = D_REGIONS[s_region.lower()]
+    else: # input s_region is just a "Country"
+        data = clean_data(data)
+        return choose_plot(data, country, year, cancer)
+
+    data = data[(data['Country'].isin(l_region))]
+
+    #! will need to add a "region" flag for changing title of plots.
+    if((cancer is not None) and (year is not None)):
+        return year_cancer(data, cancer, year)
+    if(cancer):
+        return ThreeD_plot(data, 'Cancer', cancer)
+    if(year):
+        return ThreeD_plot(data, 'Year', year)
+
+
+
+def predictFunc(data:pd.DataFrame):
+    #! input "data" should be reduced from complete raw data. 80% for training and 20% for testing.
+    pass
+
 def dataClean():
-    ''' Just the process of data import and clean from app.py '''
+    ''' Just the process of data import and clean from initialization.py '''
     # Import data
-    s_dataPath = pt.join('data', 'Cancer Deaths by Country and Type Dataset.csv')
-    df=pd.read_csv(s_dataPath)
+    df = import_data(FILENAME)
 
     # Remove NaNs
-    df['Code'] = df.groupby('Country')['Code'].transform(lambda x: x.mode()[0] if not x.mode().empty else None)
-    df['Code'] = df['Code'].apply(lambda x: x.strip() if pd.notna(x) else x)
-    df.loc[df['Country'] == 'North America', 'Code'] = 'NA'
-
+    # df['Code'] = df.groupby('Country')['Code'].transform(lambda x: x.mode()[0] if not x.mode().empty else None)
+    # df['Code'] = df['Code'].apply(lambda x: x.strip() if pd.notna(x) else x)
+    # df.loc[df['Country'] == 'North America', 'Code'] = 'NA'
     # Remove Code Column
-    df = df.drop(['Code'], axis=1)
+    # df = df.drop(['Code'], axis=1)
 
-    # Remove non_countries
-    non_countries = [
-        "American Samoa",
-        "Andean Latin America",
-        "Australasia",
-        "Bermuda",
-        "Caribbean",
-        "Central Asia",
-        "Central Europe",
-        "Central Latin America",
-        "Central Sub-Saharan Africa",
-        "East Asia",
-        "Eastern Europe",
-        "Eastern Sub-Saharan Africa",
-        "England",
-        "Greenland",
-        "Guam",
-        "Latin America and Caribbean",
-        "Micronesia (country)",
-        "North Africa and Middle East",
-        "North America",
-        "Northern Ireland",
-        "Northern Mariana Islands",
-        "Oceania",
-        "Palestine",
-        "Puerto Rico",
-        "Scotland",
-        "South Asia",
-        "Southeast Asia",
-        "Southern Latin America",
-        "Southern Sub-Saharan Africa",
-        "Sub-Saharan Africa",
-        "Taiwan",
-        "Timor",
-        "Tropical Latin America",
-        "United States Virgin Islands",
-        "Wales",
-        "Western Europe",
-        "Western Sub-Saharan Africa",
-        "World"
-    ]
-    df = df[~df['Country'].isin(non_countries)]
+    # Clean Data
+    df = clean_data(df)
+
     return df
 
 def save_plot_to_png(plot_object, filename):
@@ -281,38 +271,47 @@ if __name__ == '__main__':
     country = 'Afghanistan'
     year = None
     cancer = 'Liver cancer '
-    # plot(data, country, year, cancer)
+    # choose_plot(data, country, year, cancer)
 
     #@ Test Case 2
     country = 'Afghanistan'
     year = 1990
     cancer = None
-    # plot(data, country, year, cancer)
+    # choose_plot(data, country, year, cancer)
 
     #@ Test Case 3
     country = None
     year = 1990
     cancer = 'Liver cancer '
-    # plot(data, country, year, cancer)
+    # choose_plot(data, country, year, cancer)
 
     #@ Test Case 4
     country = 'Afghanistan'
     year = None
     cancer = None
-    # ret = plot(data, country, year, cancer)
+    # ret = choose_plot(data, country, year, cancer)
 
     #@ Test Case 5
     country = None
     year = None
     cancer = 'Liver cancer '
-    # ret = plot(data, country, year, cancer)
+    # ret = choose_plot(data, country, year, cancer)
 
     #@ Test Case 6
     country = None
     year = 1990
     cancer = None
-    ret = choose_plot(data, country, year, cancer)
+    # ret = choose_plot(data, country, year, cancer)
 
-
+    #@ Test Case 7
+    data = import_data(FILENAME)
+    # Remove Code Column
+    data = data.drop(['Code'], axis=1)
+    # Turn all Cancer Death numbers into ints
+    data.iloc[:, 2:] = data.iloc[:, 2:].astype(int)
+    region = 'africa'
+    year = None
+    cancer = 'Liver cancer '
+    regionAnalysis(data, cancer, region, year)
 
     plt.show()

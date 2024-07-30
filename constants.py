@@ -41,3 +41,11 @@ NON_COUNTRIES = [
     "Western Sub-Saharan Africa",
     "World"
 ]
+
+D_REGIONS = {
+    'asia': ["Central Asia", "East Asia","South Asia", "Southeast Asia"],
+    'europe': ["Central Europe", "Eastern Europe", "Western Europe"],
+    'northAmerica': ["North America"],
+    'latinAmerica': ["Andean Latin America", "Central Latin America", "Latin America and Caribbean", "Southern Latin America", "Tropical Latin America"],
+    'africa': ["Central Sub-Saharan Africa", "Eastern Sub-Saharan Africa", "North Africa and Middle East", "Southern Sub-Saharan Africa", "Sub-Saharan Africa", "Western Sub-Saharan Africa"]
+}
