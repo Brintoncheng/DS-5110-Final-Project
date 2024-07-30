@@ -42,7 +42,7 @@ def index():
     else:
         sort_by = request.args.get('sort_by', default_column)
         order = request.args.get('order', 'asc')
-    
+
     data = data.sort_values(by=sort_by, ascending=(order=='asc'))
     return render_template('index.html', data = data.values.tolist(), columns = data.columns.tolist(),
                            countries = countries, years = years, cancers = cancer_types)
@@ -58,11 +58,11 @@ def plot():
         year = None if year == '' else int(year) if year.isdigit() else None
         cancer = None if cancer == '' else cancer
         print(country, year, cancer)
-        
+
         plot_object = choose_plot(data=data, country=country, year=year, cancer=cancer)
         plot_png = save_plot_to_png(plot_object, 'plot_png')
         return render_template('plot.html', country_columns=countries, year_columns=years, cancer_columns=cancer_types, plot_png=plot_png)
-        
+
     else:
         return render_template('plot.html', country_columns = countries, year_columns = years, cancer_columns = cancer_types)
 

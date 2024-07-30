@@ -15,7 +15,7 @@ def import_data(filename: str) -> pd.DataFrame:
     DataFrame: The pandas DataFrame containing the imported data.
     """
     data_path = os.path.join('data', filename)
-    df=pd.read_csv(data_path)
+    df = pd.read_csv(data_path)
     return df
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -31,10 +31,10 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     # Remove Code Column
     df = df.drop(['Code'], axis=1)
-    
+
     # Remove non_countries
     df = df[~df['Country'].isin(NON_COUNTRIES)]
-    
+
     # Turn all Cancer Death numbers into ints
     df.iloc[:, 2:] = df.iloc[:, 2:].astype(int)
 
