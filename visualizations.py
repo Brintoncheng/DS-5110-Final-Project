@@ -30,9 +30,8 @@ Plot scenarios:
 #!         That would require limiting user's selection in FE UI, and perhaps an additional function to pre-process data.
 
 
-def choose_plot(data, country:str=None, year:int=None, cancer:str=None, plot_type=''):
+def choose_plot(data, country:str=None, year:int=None, cancer:str=None):
     # the defaults should be "all", like all-country, all-years, all-cancer-types, etc.
-    s_plot = 'hist' #@ might remove this.
     if (country is not None) and (cancer is not None):
         return country_cancer(data, cancer, country)
 
@@ -93,7 +92,6 @@ def country_year(data:pd.DataFrame, country:str=None, year:int=None):
     fig, ax = plt.subplots(figsize=(12,6))
     sns.barplot(x=x_data, y=y_data, ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-    # ax.tick_params(axis='x', rotation=90)
     plt.tight_layout()
     plt.subplots_adjust(top = 0.9, bottom=0.4)
     ax.set(xlabel='Cancer Types', ylabel='Deaths')
@@ -101,7 +99,7 @@ def country_year(data:pd.DataFrame, country:str=None, year:int=None):
     return fig
 
 
-def year_cancer(data:pd.DataFrame, cancer:str=None, year:int=None, sort=False, top=False, bottom=False):
+def year_cancer(data:pd.DataFrame, cancer:str=None, year:int=None):
     '''
     @Purpose: Create a Bar plot showing number of Death of a given Cancer at a given Year with respect to Countries.
     @Param:
@@ -114,10 +112,6 @@ def year_cancer(data:pd.DataFrame, cancer:str=None, year:int=None, sort=False, t
     s_title = f'Death of {cancer} in {year} in every country'
     df_filter = data.loc[data['Year'] == year, ['Country', cancer]]
     
-    # Filter for top and bottom
-    
-    # If sort:
-
     if df_filter.empty:
         raise ValueError("No data available for the specified year and cancer type.")
 
@@ -125,7 +119,6 @@ def year_cancer(data:pd.DataFrame, cancer:str=None, year:int=None, sort=False, t
         # figsize=[data['Country'].unique().size, 20]
     sns.barplot(data=df_filter, x='Country', y=cancer, ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-    # ax.tick_params(axis='x', rotation=90)
     ax.set(yscale='log', xlabel='Country', ylabel=f'{cancer} deaths (log scale)') # yscale='linear' or 'log'
     ax.set_title(s_title)
 
