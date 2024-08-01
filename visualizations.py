@@ -224,19 +224,17 @@ def worldTopCancerRegression(top:int=5):
     ## Plotting.
     df_melt = data.drop(columns=['Country'])
     df_melt = pd.melt(df_melt, ['Year'], var_name='cancer') #;print(df_melt, ['Year'])
-    fig, ax = plt.subplots()
     #* multi lineplot way
+    # fig, ax = plt.subplots(1)
     # sns.lineplot(data=df_melt, x='Year', y='value', hue='cancer')
-    # ax.set(yscale='linear', xlabel='Year', ylabel='Cancer Death', title='Death of top 5 cancers over years in World')
+    # ax.set(yscale='linear', xlabel='Year', ylabel='Cancer Death', title=f'Death of top {top} cancers over years in World')
+    # ax.grid(visible=True)
     #* multi regression way
-    lm = sns.lmplot(data=df_melt, x='Year', y='value', hue='cancer') #@ seaborn doesn't provide slope info, according to seaborn lead dev.
-    plt.title(f'Death of top {top} cancers over years in World')
-    # plt.yscale('log')
-    plt.xlabel('Year')
-    plt.ylabel('Cancer Death')
-    plt.grid(visible=True)
+    lm = sns.lmplot(data=df_melt, x='Year', y='value', hue='cancer', aspect=2) #@ seaborn doesn't provide slope info, according to seaborn lead dev.
+    lm.set(yscale='linear', xlabel='Year', ylabel='Cancer Death', title=f'Death of top {top} cancers over years in World')
+    lm.ax.grid(visible=True)
 
-    return fig
+    return lm
 
 # Lung, bladder, breast, colorectal/colon, prostate cancers are likely due to older age.
 def ageVsCancer():
@@ -375,7 +373,7 @@ def reduceToTopCancer(data:pd.DataFrame=None, top:int=5) -> pd.DataFrame:
     topCancers = ['Country', 'Year']
     # topCancers += TOP_5_CANCER
     topCancers += topCancerAnalysis(top)
-    print(topCancers)
+    # print(topCancers)
     if(data is None or data.empty):
         data = import_data(FILENAME)
     if('Code' in data.columns):
@@ -426,6 +424,28 @@ def save_plot_to_png(plot_object, filename) -> str:
     plot_png = f"{filename}.png"
     return plot_png
 
+def lung_region_year():
+    df_lungRegion = reduceCountryToContinent()
+    df_lungRegion = df_lungRegion[['Country', 'Year', 'Tracheal, bronchus, and lung cancer ']]
+    return ThreeD_plot(df_lungRegion, 'Cancer', 'Tracheal, bronchus, and lung cancer ')
+
+def liver_region_year():
+    df_liver = reduceToTopCancer(top=5)
+    df_liver = reduceCountryToContinent(data=df_liver)
+    return ThreeD_plot(data=df_liver, key='Cancer', value='Liver cancer ')
+
+def liver_asia_year():
+    df_asia = reduceToTopCancer(top=5)
+    return regionOrCountry(data=df_asia, cancer='Liver cancer ', regionCountry='asia', year=None)
+
+def prostate_africa_year():
+    df_africa = import_data(FILENAME)
+    # Remove Code Column
+    df_africa = df_africa.drop(['Code'], axis=1)
+    # Turn all Cancer Death numbers into ints
+    df_africa.iloc[:, 2:] = df_africa.iloc[:, 2:].astype(int)
+    df_africa = df_africa[['Country', 'Year', 'Prostate cancer ']]
+    return regionOrCountry(data=df_africa, cancer='Prostate cancer ', regionCountry='africa', year=None)
 
 if __name__ == '__main__':
     data = countryData()
@@ -527,9 +547,9 @@ if __name__ == '__main__':
     # ThreeD_plot(data, 'Year', 2016)
 
     #@ Liver cancer, continent vs year
-    df_liver = reduceToTopCancer(top=5)
-    df_liver = reduceCountryToContinent(data=df_liver)
-    ThreeD_plot(data=df_liver, key='Cancer', value='Liver cancer ')
+    # df_liver = reduceToTopCancer(top=5)
+    # df_liver = reduceCountryToContinent(data=df_liver)
+    # ThreeD_plot(data=df_liver, key='Cancer', value='Liver cancer ')
 
     #@ Analyze Liver cancer within Asia.
     # df_asia = reduceToTopCancer(top=5)

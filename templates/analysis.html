@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+    <form method="post">
+        <!-- <label for="country">Country:</label>
+        <select name="country" id="country">
+            <option value="" selected>All Countries</option>
+            {% for column in country_columns %}
+            <option value="{{ column }}">{{ column }} </option>
+            {% endfor %}
+            <select name="All Countries" id=""></select>
+        </select>
+        <label for="year">Year:</label>
+        <select name="year" id="year">
+            <option value="" selected>All Years</option>
+            {% for column in year_columns %}
+            <option value="{{ column }}">{{ column }}</option>
+            {% endfor %}
+        </select>
+        <label for="cancer">Cancer:</label>
+        <select name="cancer" id="cancer">
+            <option value="" selected>All Cancers</option>
+            {% for column in cancer_columns %}
+            <option value="{{ column }}">{{ column }}</option>
+            {% endfor %}
+        </select> -->
+
+        <!-- <input type="submit" name="analysis_button" value="A1">
+        <input type="submit" name="analysis_button" value="A2">
+        <input type="submit" name="analysis_button" value="A2"> -->
+
+        <button type="submit" name="analysis_button" value="A1">World, all cancer vs year</button>
+        <button type="submit" name="analysis_button" value="A2">World, 5 cancer vs year</button>
+        <button type="submit" name="analysis_button" value="A3">Lung cancer, continent vs year</button>
+        <button type="submit" name="analysis_button" value="A4">Liver cancer, continent vs year</button>
+        <button type="submit" name="analysis_button" value="A5">Liver cancer, Asia vs year</button>
+        <button type="submit" name="analysis_button" value="A6">Prostate cancer, Africa vs year</button>
+
+    </form>
+    {% if analysis_png %}
+    <!-- <h1>{{ yaxis }} vs {{ xaxis }}</h1> -->
+    <img src="{{ url_for('analysis_png', filename=analysis_png) }}" alt="Plot">
+    {% endif %}
+
+{% endblock %}

@@ -74,6 +74,39 @@ def plot_png(filename):
 def thanks():
     return render_template('thanks.html')
 
+@app.route('/analysis', methods=["GET", "POST"])
+def analysis():
+    try: #@ remove analysis_png.png at start
+        analysis_png_path = os.path.join('static', 'plots', 'analysis_png.png')
+        os.remove(analysis_png_path)
+    except:
+        pass
+
+    if request.method == "POST":
+        print(f"request.form['analysis_button'] = {request.form['analysis_button']}")
+        match request.form['analysis_button']:
+            case 'A1':
+                plot_object = worldTopCancerRegression(27)
+            case 'A2':
+                plot_object = worldTopCancerRegression(5)
+            case 'A3':
+                plot_object = lung_region_year()
+            case 'A4':
+                plot_object = liver_region_year()
+            case 'A5':
+                plot_object = liver_asia_year()
+            case 'A6':
+                plot_object = prostate_africa_year()
+
+        analysis_png = save_plot_to_png(plot_object, 'analysis_png')
+        return render_template('analysis.html', analysis_png=analysis_png)
+    else:
+        return render_template('analysis.html')
+
+@app.route('/static/plots/<filename>')
+def analysis_png(filename):
+    return send_from_directory('static/plots', filename)
+
 if __name__ == '__main__':
     if not os.path.exists('static/plots'):
         os.makedirs('static/plots')
