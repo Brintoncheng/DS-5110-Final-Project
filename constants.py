@@ -49,3 +49,7 @@ D_REGIONS = {
     'latinAmerica': ["Andean Latin America", "Central Latin America", "Latin America and Caribbean", "Southern Latin America", "Tropical Latin America"],
     'africa': ["Central Sub-Saharan Africa", "Eastern Sub-Saharan Africa", "North Africa and Middle East", "Southern Sub-Saharan Africa", "Sub-Saharan Africa", "Western Sub-Saharan Africa"]
 }
+
+TOP_5_CANCER = ['Tracheal, bronchus, and lung cancer ', 'Stomach cancer ', 'Colon and rectum cancer ', 'Liver cancer ', 'Breast cancer ']
+TOP_10_CANCER = ['Tracheal, bronchus, and lung cancer ', 'Stomach cancer ', 'Colon and rectum cancer ', 'Liver cancer ', 'Breast cancer ',
+                'Esophageal cancer ', 'Pancreatic cancer ', 'Prostate cancer ', 'Leukemia ', 'Cervical cancer ']

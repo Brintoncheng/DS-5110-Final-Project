@@ -1,3 +1,4 @@
 /__pycache__
 explore.ipynb
-/static/plots/plot_png.png
+/static/plots/*.png
+# ignore png is not working
